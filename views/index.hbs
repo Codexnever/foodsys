@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{pageTitle}}</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+    integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@434&display=swap" rel="stylesheet">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      height: 100vh;
+      margin-top: -47px;
+      font-family: "Roboto", sans-serif;
+      font-weight: bold;
+
+    }
+
+    .card {
+      color: rgb(255, 255, 255);
+      width: 30%;
+      max-height: 100vh;
+      min-height: 50vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: red transparent;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 10px 8px rgba(0, 0, 0, 0.1);
+      padding: 0px;
+      font-weight: bold;
+
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      animation: shadowAnimation 2s infinite;
+    }
+
+    @keyframes shadowAnimation {
+      0% {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 10px rgba(89, 166, 31, 0.5);
+      }
+
+      50% {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 20px rgba(89, 166, 31, 0.7);
+      }
+
+      100% {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 10px rgba(89, 166, 31, 0.5);
+      }
+    }
+
+    .top,
+    .bottom {
+      position: sticky;
+      width: 100%;
+      height: 50px;
+      background-color: #59a61f;
+      z-index: 1;
+    }
+
+    .top {
+      top: 0;
+      height: 12vh;
+
+    }
+
+    .top h4 {
+      margin: 0;
+      position: absolute;
+      top: 10px;
+      left: 12px;
+    }
+
+    .bottom {
+      bottom: 0;
+      width: calc(110% + 5px);
+      border-radius: 0 0 10px 7px;
+      margin-left: -22px;
+    }
+
+    .item-row {
+      color: black;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      border-bottom: 1px dotted rgb(153, 153, 153);
+
+      padding: 0px;
+      background-color: #ffffff;
+      border-radius: 5px;
+    }
+
+    .card-body {
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 768px) {
+      .card {
+        width: 90%;
+        max-height: 80vh;
+        /* Adjusted max height */
+        min-height: 50vh;
+      }
+    }
+
+    .button-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .quantity-form {
+      display: none;
+    }
+
+    .qty {
+      text-align: center;
+    }
+
+    input.qtyplus {
+      width: 25px;
+      height: 25px;
+      color: white;
+    }
+
+    input.qtyminus {
+
+      width: 25px;
+      color: white;
+      height: 25px;
+    }
+
+    .card::-webkit-scrollbar {
+      width: 50px;
+      background: red;
+    }
+
+    .view-order-btn {
+     align-self: flex-end;
+      width: 100%;
+      border: none;
+      background-color: #59a61f;
+      color: white;
+      border-radius: 5px;
+      padding: 10px;
+      cursor: pointer;
+      position: sticky;
+      bottom: 0;
+      font-weight: bold;
+      margin-top: auto;
+    }
+
+    .view-order-btn:hover {
+      transition: all 0.2s ease-in;
+      box-shadow: 1px 2px 13px 3px #535a4e;
+    }
+
+
+    @media (max-width: 1080px) and (max-height: 2340px) {
+      body {
+
+        background-color: #f0f0f0;
+      }
+
+      .card {
+        width: 100%;
+        max-height: 100vh
+      }
+
+      .top {
+        top: 0;
+        border-radius: 10px 5px 0 0;
+        height: 8vh;
+
+      }
+
+    }
+
+    .hidden {
+      display: none;
+    }
+        /* Add this style for the category filter section */
+.category-filter {
+  display: flex;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+.category-filter::-webkit-scrollbar {
+  display: none;
+}
+
+.category-btn {
+  white-space: nowrap; /* Prevent button text from wrapping */
+  margin-right: 10px; /* Add some space between buttons */
+  background-color: #59a61f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 15px;
+  cursor: pointer;
+}
+  </style>
+</head>
+
+<body>
+
+  <div class="card mt-5">
+    <div class="top">
+      <h4 class="med">MedResto</h4>
+    </div>
+    {{>search}}
+    <div class="card-body" id="itemsContainer">
+      <div class="category-filter">
+  <button class="category-btn" onclick="filterCategory('all')">All</button>
+  <button class="category-btn" onclick="filterCategory('veg')">{{category}}</button>
+  <button class="category-btn" onclick="filterCategory('nonveg')">Non-Veg</button>
+  <button class="category-btn" onclick="filterCategory('chinese')">Chinese</button>
+  <button class="category-btn" onclick="filterCategory('chicken')">Chicken</button>
+</div> 
+      {{#each items}}
+      <div class="item-row">
+        <div>
+          <h5>{{itemName}}</h5>
+          <div class="price" style="display: block;margin-top:5%">{{itemPrice}}</div>
+        </div>
+        <button class="btn btn-primary" style="background-color: #59a61f; border: none;width: 15vh;height:"
+          onclick="toggleAdjust(this)">Add</button>
+        <div class="quantity-form">
+          <form id='myform' method='POST' class='quantity' action='#'>
+            <input type='button' value='-' class='qtyminus minus' field='quantity'
+              style="padding-bottom: 25px;background-color:#59a61f;border:none;border: radius 5px;" />
+            <input type='text' name='quantity' value='1' class='qty' style="width: 50px;" />
+            <input type='button' value='+' class='qtyplus plus' field='quantity'
+              style="padding-bottom: 25px;background-color:#59a61f; border:none;border: radius 5px;" />
+          </form>
+        </div>
+      </div>
+      {{/each}}
+      <button id="viewOrderBtn" class="view-order-btn">View Order</button>
+    </div>
+  </div>
+
+  <script>
+    
+    function filterCategory(category) {
+  const items = document.querySelectorAll('.item-row');
+
+  items.forEach(item => {
+    const categoryElement = item.querySelector('.category');
+    const isVisible = category === 'all' || (categoryElement && categoryElement.textContent.toLowerCase() === category);
+
+    item.style.display = isVisible ? 'flex' : 'none';
+  });
+}
+    // Array to store selected items
+    const selectedItems = [];
+
+    function toggleAdjust(button) {
+      const quantityForm = button.nextElementSibling;
+      const adjustButton = button;
+      const quantityInput = quantityForm.querySelector('.qty');
+
+      const itemNameElement = button.closest('.item-row').querySelector('h5');
+      const itemName = itemNameElement ? itemNameElement.textContent : '';
+
+
+
+      if (quantityInput.value === '0') {
+        adjustButton.style.display = 'block';
+        quantityForm.style.display = 'none';
+      } else {
+        adjustButton.style.display = 'none';
+        quantityForm.style.display = 'flex';
+        quantityForm.style.justifyContent = 'center';
+        quantityForm.style.alignItems = 'center';
+      }
+
+      const existingItem = selectedItems.find(item => item.name === itemName);
+
+      if (existingItem) {
+        existingItem.quantity = parseInt(quantityInput.value);
+      } else {
+        selectedItems.push({ name: itemName, quantity: parseInt(quantityInput.value), price: parseFloat(button.closest('.item-row').querySelector('.price').textContent.replace(/\$/g, '')) });
+      }
+    }
+
+    // Function to redirect to the second page with selected items
+    function redirectToSecondPage() {
+      const selectedItemsJSON = encodeURIComponent(JSON.stringify(selectedItems));
+
+      window.location.href = 'second?items=' + selectedItemsJSON;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const searchInput = document.getElementById('searchInput');
+      const itemsContainer = document.getElementById('itemsContainer');
+      const noMatchMessage = document.getElementById('noMatchMessage');
+
+      searchInput.addEventListener('input', function () {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+
+        let matchFound = false;
+
+        document.querySelectorAll('.item-row').forEach(itemRow => {
+          const itemName = itemRow.querySelector('h5').textContent.trim().toLowerCase();
+          const itemIsVisible = itemName.includes(searchTerm);
+
+          itemRow.classList.toggle('hidden', !itemIsVisible);
+
+          if (itemIsVisible) {
+            matchFound = true;
+          }
+        });
+
+        noMatchMessage.classList.toggle('hidden', matchFound);
+      });
+
+      // Handle click event for "View Order" button
+      document.getElementById('viewOrderBtn').addEventListener('click', redirectToSecondPage);
+
+      jQuery(document).ready(($) => {
+        $('.quantity').on('click', '.plus', function (e) {
+          let $input = $(this).prev('input.qty');
+          let val = parseInt($input.val());
+          $input.val(val + 1).change();
+          toggleAdjust($(this).closest('.quantity-form').prev('.btn-primary')[0]);
+        });
+
+        $('.quantity').on('click', '.minus', function (e) {
+          let $input = $(this).next('input.qty');
+          var val = parseInt($input.val());
+          if (val > 0) {
+            $input.val(val - 1).change();
+            toggleAdjust($(this).closest('.quantity-form').prev('.btn-primary')[0]);
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>
