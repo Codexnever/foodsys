@@ -279,7 +279,7 @@ function updateItemsList(items, category) {
       itemRow.appendChild(itemName);
       itemRow.appendChild(itemPrice);
 
-      // Create and append the "Add" button and quantity form (modify as per your structure)
+      // Create and append the "Add" button
       const addButton = document.createElement('button');
       addButton.classList.add('btn', 'btn-primary');
       addButton.style.backgroundColor = '#59a61f';
@@ -289,11 +289,26 @@ function updateItemsList(items, category) {
         toggleAdjust(addButton);
       };
 
+      itemRow.appendChild(addButton);
+
+      // Create and append the quantity form
       const quantityForm = document.createElement('div');
       quantityForm.classList.add('quantity-form');
-      // ... Create and append quantity form elements ...
 
-      itemRow.appendChild(addButton);
+      // Create quantity input
+      const quantityInput = document.createElement('input');
+      quantityInput.type = 'text';
+      quantityInput.name = 'quantity';
+      quantityInput.value = '1';
+      quantityInput.classList.add('qty');
+      quantityInput.style.width = '10vh';
+      quantityInput.style.backgroundColor = 'rgb(209, 236, 166)';
+      quantityInput.style.border = 'none';
+
+      // Create and append quantity form elements (e.g., input, buttons)
+      quantityForm.appendChild(quantityInput);
+      // Add other elements related to quantity form as needed
+
       itemRow.appendChild(quantityForm);
 
       // Append the itemRow to the itemsContainer
@@ -301,6 +316,10 @@ function updateItemsList(items, category) {
     }
   });
 }
+
+
+
+
 
   function handleCategoryClick(category) {
   console.log('Clicked category:', category);
@@ -376,49 +395,77 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
     const selectedItems = [];
-    function toggleAdjust(button) {
-  const quantityForm = button.nextElementSibling;
-
-  // Check if quantityForm or its child elements are not found
-  if (!quantityForm || !quantityForm.querySelector || !quantityForm.querySelector('.qty')) {
-    console.error('Error: Quantity form or its child elements not found.');
+function toggleAdjust(button) {
+  const itemRow = button.closest('.item-row');
+  if (!itemRow) {
+    console.error('Error: Item row not found.');
     return;
   }
 
-  const adjustButton = button;
-  const quantityInput = quantityForm.querySelector('.qty');
+  const quantityForm = itemRow.querySelector('.quantity-form');
+  if (!quantityForm) {
+    console.error('Error: Quantity form not found.');
+    return;
+  }
 
-  // Check if quantityInput is not found
+  const quantityInput = quantityForm.querySelector('input.qty');
   if (!quantityInput) {
-    console.error('Error: Quantity input not found.');
-    return;
+    const quantityFormInner = quantityForm.querySelector('.qty');
+    if (quantityFormInner && quantityFormInner.tagName === 'INPUT') {
+      quantityInput = quantityFormInner;
+    } else {
+      console.error('Error: Quantity input not found inside quantity form.');
+      return;
+    }
   }
 
-  const itemNameElement = button.closest('.item-row').querySelector('h5');
+  const itemNameElement = itemRow.querySelector('h5');
   const itemName = itemNameElement ? itemNameElement.textContent : '';
 
-  if (quantityInput.value === '0') {
-    adjustButton.style.display = 'block';
-    quantityForm.style.display = 'none';
-  } else {
-    adjustButton.style.display = 'none';
-    quantityForm.style.display = 'flex';
-    quantityForm.style.justifyContent = 'center';
-    quantityForm.style.alignItems = 'center';
+  if (!itemName) {
+    console.error('Error: Item name not found.');
+    return;
   }
+
+  const priceElement = itemRow.querySelector('.price');
+  const priceText = priceElement ? priceElement.textContent : '';
+  const price = priceText ? parseFloat(priceText.replace(/\$/g, '')) : 0;
 
   const existingItem = selectedItems.find(item => item.name === itemName);
 
-  if (existingItem) {
-    existingItem.quantity = parseInt(quantityInput.value);
+  if (quantityInput.value === '0') {
+    // Remove item if quantity is set to 0
+    if (existingItem) {
+      selectedItems.splice(selectedItems.indexOf(existingItem), 1);
+    }
+    button.style.display = 'block';
+    quantityForm.style.display = 'none';
   } else {
-    selectedItems.push({
-      name: itemName,
-      quantity: parseInt(quantityInput.value),
-      price: parseFloat(button.closest('.item-row').querySelector('.price').textContent.replace(/\$/g, '')),
-    });
+    button.style.display = 'none';
+    quantityForm.style.display = 'flex';
+    quantityForm.style.justifyContent = 'center';
+    quantityForm.style.alignItems = 'center';
+
+    const quantity = parseInt(quantityInput.value);
+
+    if (existingItem) {
+      // Update quantity if item already exists
+      existingItem.quantity = quantity;
+    } else {
+      // Add new item to the list
+      selectedItems.push({
+        name: itemName,
+        quantity: quantity,
+        price: price,
+      });
+    }
   }
 }
+
+
+
+
+
 
 
     // Function to redirect to the second page with selected items
