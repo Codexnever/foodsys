@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -192,6 +193,8 @@
         /* Add this style for the category filter section */
 .category-filter {
   display: flex;
+margin-top: -24px;
+margin-left: -17px;
   overflow-x: auto; /* Enable horizontal scrolling */
   padding: 10px;
   border-bottom: 1px solid #ccc;
@@ -210,39 +213,40 @@
   padding: 8px 15px;
   cursor: pointer;
 }
+
   </style>
 </head>
 
 <body>
-
   <div class="card mt-5">
     <div class="top">
       <h4 class="med">MedResto</h4>
     </div>
     {{>search}}
+   
     <div class="card-body" id="itemsContainer">
+<div id="categoryHeaderContainer">
+  <h5 style="color: black; margin-top: -20px; margin-bottom: 15px;">Category</h5>
+</div>
       <div class="category-filter">
-  <button class="category-btn" onclick="filterCategory('all')">All</button>
-  <button class="category-btn" onclick="filterCategory('veg')">{{category}}</button>
-  <button class="category-btn" onclick="filterCategory('nonveg')">Non-Veg</button>
-  <button class="category-btn" onclick="filterCategory('chinese')">Chinese</button>
-  <button class="category-btn" onclick="filterCategory('chicken')">Chicken</button>
-</div> 
+      {{#each categories}}
+       <button class="category-btn" onclick="handleCategoryClick('{{category}}')">{{category}}</button>
+        {{/each}} 
+      </div> 
       {{#each items}}
       <div class="item-row">
         <div>
           <h5>{{itemName}}</h5>
-          <div class="price" style="display: block;margin-top:5%">{{itemPrice}}</div>
+          <div class="price">{{itemPrice}}</div>
         </div>
-        <button class="btn btn-primary" style="background-color: #59a61f; border: none;width: 15vh;height:"
-          onclick="toggleAdjust(this)">Add</button>
+        <button class="btn btn-primary" style="background-color:#59a61f; border:none;" onclick="toggleAdjust(this)">Add</button >
         <div class="quantity-form">
-          <form id='myform' method='POST' class='quantity' action='#'>
-            <input type='button' value='-' class='qtyminus minus' field='quantity'
-              style="padding-bottom: 25px;background-color:#59a61f;border:none;border: radius 5px;" />
-            <input type='text' name='quantity' value='1' class='qty' style="width: 50px;" />
-            <input type='button' value='+' class='qtyplus plus' field='quantity'
-              style="padding-bottom: 25px;background-color:#59a61f; border:none;border: radius 5px;" />
+          <form method='POST' class='quantity' action='#'>
+            <input type='button' value='-' class='qtyminus minus' field='quantity' style="background-color:#59a61f;border:none;border-radius:3px;" />
+            <input type='text' name='quantity' value='1' class='qty' style="width: 10vh
+            ;background-color: rgb(209, 236, 166);
+      border: none;"/>
+            <input type='button' value='+' class='qtyplus plus' field='quantity'  style="background-color:#59a61f;border:none;border-radius:3px;"/>
           </form>
         </div>
       </div>
@@ -252,48 +256,170 @@
   </div>
 
   <script>
-    
-    function filterCategory(category) {
-  const items = document.querySelectorAll('.item-row');
+function updateItemsList(items, category) {
+  const itemsContainer = document.getElementById('itemsContainer');
 
+  // Clear the existing items in the container
+  itemsContainer.innerHTML = '';
+
+  // Iterate through the new items and append them to the container
   items.forEach(item => {
-    const categoryElement = item.querySelector('.category');
-    const isVisible = category === 'all' || (categoryElement && categoryElement.textContent.toLowerCase() === category);
+    if (item.category === category) { // Check if the item's category matches the clicked category
+      const itemRow = document.createElement('div');
+      itemRow.classList.add('item-row');
 
-    item.style.display = isVisible ? 'flex' : 'none';
+      // Create elements for item details (modify as per your structure)
+      const itemName = document.createElement('h5');
+      itemName.textContent = item.itemName;
+
+      const itemPrice = document.createElement('div');
+      itemPrice.textContent = item.itemPrice;
+
+      // Append the item details to the itemRow
+      itemRow.appendChild(itemName);
+      itemRow.appendChild(itemPrice);
+
+      // Create and append the "Add" button and quantity form (modify as per your structure)
+      const addButton = document.createElement('button');
+      addButton.classList.add('btn', 'btn-primary');
+      addButton.style.backgroundColor = '#59a61f';
+      addButton.style.border = 'none';
+      addButton.textContent = 'Add';
+      addButton.onclick = function () {
+        toggleAdjust(addButton);
+      };
+
+      const quantityForm = document.createElement('div');
+      quantityForm.classList.add('quantity-form');
+      // ... Create and append quantity form elements ...
+
+      itemRow.appendChild(addButton);
+      itemRow.appendChild(quantityForm);
+
+      // Append the itemRow to the itemsContainer
+      itemsContainer.appendChild(itemRow);
+    }
   });
 }
-    // Array to store selected items
-    const selectedItems = [];
 
-    function toggleAdjust(button) {
-      const quantityForm = button.nextElementSibling;
-      const adjustButton = button;
-      const quantityInput = quantityForm.querySelector('.qty');
+  function handleCategoryClick(category) {
+  console.log('Clicked category:', category);
 
-      const itemNameElement = button.closest('.item-row').querySelector('h5');
-      const itemName = itemNameElement ? itemNameElement.textContent : '';
+ fetch(`/api/items?category=${category}`)
+  .then(response => response.json())
+  .then(data => {
+    console.log('Filtered items:', data.items);
+    updateItemsList(data.items, category);
+  })
+  .catch(error => console.error('Error fetching items:', error));
 
+}
+document.addEventListener('DOMContentLoaded', function () {
+    // Define handleCategoryClick function
 
+    // Define setupCategoryButtons function
+    function setupCategoryButtons(categories) {
+        const categoryFilter = document.querySelector('.category-filter');
 
-      if (quantityInput.value === '0') {
-        adjustButton.style.display = 'block';
-        quantityForm.style.display = 'none';
-      } else {
-        adjustButton.style.display = 'none';
-        quantityForm.style.display = 'flex';
-        quantityForm.style.justifyContent = 'center';
-        quantityForm.style.alignItems = 'center';
-      }
-
-      const existingItem = selectedItems.find(item => item.name === itemName);
-
-      if (existingItem) {
-        existingItem.quantity = parseInt(quantityInput.value);
-      } else {
-        selectedItems.push({ name: itemName, quantity: parseInt(quantityInput.value), price: parseFloat(button.closest('.item-row').querySelector('.price').textContent.replace(/\$/g, '')) });
-      }
+        categories.forEach(category => {
+            const button = createButton(category.category, () => handleCategoryClick(category.category));
+            categoryFilter.appendChild(button);
+        });
     }
+//end
+
+
+   fetch('/api/categories')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const categories = data.categories;
+            if (!categories || !Array.isArray(categories)) {
+                throw new Error('Invalid response format for categories');
+            }
+
+            setupCategoryButtons(categories);
+        })
+        .catch(error => console.error('Error fetching categories:', error));
+});
+/*
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    categoryButtons.forEach(button => {
+      button.addEventListener('click', function () {
+        const category = this.textContent.toLowerCase();
+        const subcategoryFilter = document.querySelector('.subcategory-filter'); // Add this line
+        filterSubcategories(category, subcategoryFilter);
+      });
+    });
+
+    */
+    function createButton(text, clickHandler) {
+      const button = document.createElement('button');
+      button.classList.add('category-btn');
+      button.textContent = text;
+      button.onclick = clickHandler;
+      return button;
+    }
+
+    function filterCategory(category) {
+      const items = document.querySelectorAll('.item-row');
+      console.log('Filtering subcategories for:', category);
+
+      items.forEach(item => {
+        const categoryElement = item.querySelector('.category');
+        const isVisible = category === 'all' || (categoryElement && categoryElement.textContent.toLowerCase() === category);
+        item.style.display = isVisible ? 'flex' : 'none';
+      });
+    }
+    const selectedItems = [];
+    function toggleAdjust(button) {
+  const quantityForm = button.nextElementSibling;
+
+  // Check if quantityForm or its child elements are not found
+  if (!quantityForm || !quantityForm.querySelector || !quantityForm.querySelector('.qty')) {
+    console.error('Error: Quantity form or its child elements not found.');
+    return;
+  }
+
+  const adjustButton = button;
+  const quantityInput = quantityForm.querySelector('.qty');
+
+  // Check if quantityInput is not found
+  if (!quantityInput) {
+    console.error('Error: Quantity input not found.');
+    return;
+  }
+
+  const itemNameElement = button.closest('.item-row').querySelector('h5');
+  const itemName = itemNameElement ? itemNameElement.textContent : '';
+
+  if (quantityInput.value === '0') {
+    adjustButton.style.display = 'block';
+    quantityForm.style.display = 'none';
+  } else {
+    adjustButton.style.display = 'none';
+    quantityForm.style.display = 'flex';
+    quantityForm.style.justifyContent = 'center';
+    quantityForm.style.alignItems = 'center';
+  }
+
+  const existingItem = selectedItems.find(item => item.name === itemName);
+
+  if (existingItem) {
+    existingItem.quantity = parseInt(quantityInput.value);
+  } else {
+    selectedItems.push({
+      name: itemName,
+      quantity: parseInt(quantityInput.value),
+      price: parseFloat(button.closest('.item-row').querySelector('.price').textContent.replace(/\$/g, '')),
+    });
+  }
+}
+
 
     // Function to redirect to the second page with selected items
     function redirectToSecondPage() {
@@ -315,18 +441,14 @@
         document.querySelectorAll('.item-row').forEach(itemRow => {
           const itemName = itemRow.querySelector('h5').textContent.trim().toLowerCase();
           const itemIsVisible = itemName.includes(searchTerm);
-
           itemRow.classList.toggle('hidden', !itemIsVisible);
-
           if (itemIsVisible) {
             matchFound = true;
           }
         });
-
         noMatchMessage.classList.toggle('hidden', matchFound);
       });
 
-      // Handle click event for "View Order" button
       document.getElementById('viewOrderBtn').addEventListener('click', redirectToSecondPage);
 
       jQuery(document).ready(($) => {
@@ -346,9 +468,11 @@
           }
         });
       });
+     
+
+
     });
   </script>
-
 </body>
 
 </html>
