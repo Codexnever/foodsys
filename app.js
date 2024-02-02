@@ -15,6 +15,7 @@ const db = mysql.createPool({
   password: '',
   database: 'mydatabase',
 });
+app.use(express.static('public'));
 
 app.set('view engine', 'hbs');
 app.set('views', b);
@@ -32,33 +33,15 @@ app.get('/api/categories', (req, res) => {
     }
 
     const categories = results;
+   
     res.json({ categories });
   });
 });
 
-///api/subcategories
-app.get('/api/subcategories', (req, res) => {
-  const { category } = req.query;
-  const query = `SELECT * FROM subcategory WHERE categoryId = (SELECT Id FROM category WHERE category = '${category}')`;
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error('Error querying subcategories:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-      return;
-    }
-    const subcategories = results;
-    console.log(subcategories)
-
-    res.json({ subcategories });
-  });
-});
-
-
-
 app.get('/api/items', (req, res) => {
   const { category } = req.query;
 
-  const query = `SELECT * FROM menuitem WHERE category = '${category}'`;
+  const query = `SELECT * FROM menuitem WHERE LOWER(category) = LOWER('${category}')`;
 
   db.query(query, (err, results) => {
     if (err) {
@@ -71,6 +54,56 @@ app.get('/api/items', (req, res) => {
     res.json({ items });
   });
 });
+
+
+///api/subcategories
+app.get('/api/subcategories', (req, res) => {
+  const qr = "SELECT * FROM subcategory";
+  db.query(qr, (err, results) => {
+    if (err) {
+      console.error('Error querying subcategories:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+    const subcategories = results;
+    // console.log(subcategories);
+    // Handle the results as needed
+    res.json({ subcategories });
+  });
+});
+
+
+
+
+app.get('/api/itemss', (req, res) => {
+  const { subcategory } = req.query;
+
+  // Check if subcategory is empty
+  if (!subcategory) {
+    return res.status(400).json({ error: 'Subcategory cannot be empty' });
+  }
+
+  const queryy = `SELECT * FROM menuitem WHERE LOWER(subcategory) = LOWER('${subcategory}')`;
+
+  console.log('Executing SQL Query:', queryy);
+
+  db.query(queryy, (err, results) => {
+    if (err) {
+      console.error('Error querying items:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
+    const it = results;
+    console.log('Subcategory:', subcategory);
+    console.log('Filtered items:', it);
+
+    res.json({ it });
+  });
+});
+
+
+
 
 
 //category sepration

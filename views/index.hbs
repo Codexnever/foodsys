@@ -202,6 +202,31 @@ margin-left: -17px;
 .category-filter::-webkit-scrollbar {
   display: none;
 }
+.subcategory-filter {
+  display: flex;
+margin-top: -24px;
+margin-left: -17px;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+.subcategory-filter::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+.category-filter2 {
+display: flex;
+margin-top: 5px;
+margin-left: -17px;
+overflow-x: auto;  
+padding: 10px;
+border-bottom: 1px solid #ccc;
+}
+.category-filter2::-webkit-scrollbar {
+  display: none;
+}
+*/
 
 .category-btn {
   white-space: nowrap; /* Prevent button text from wrapping */
@@ -228,11 +253,23 @@ margin-left: -17px;
       <div id="categoryHeaderContainer">
         <h5 style="color: black; margin-top: -20px; margin-bottom: 15px;">Category</h5>
       </div>
-       <div class="category-filter">
-        {{#each categories}}
-          <button class="category-btn" onclick="handleCategoryClick('{{category}}')">{{category}}</button>
-        {{/each}} 
-            </div> 
+
+  <div class="category-filter">
+ {{#each categories}}
+    <button class="category-btn" onclick="handleCategoryClick('{{category}}')">{{category}}</button>
+  {{/each}}
+  </div> 
+
+<div class="subcategory-filter " style="margin-top: 10px;" >
+<h5 style="color: black; margin-top: -20px; margin-bottom: 15px;">subCategory</h5>
+{{#each subcategories}}
+  <button class="category-btn" style="width: 50px; height:30px;" data-subcategory="{{this}}">{{this}}</button>
+{{/each}}
+
+</div>
+{{!-- <div class="category-filter2" >
+</div> --}}
+
  {{#each items}}
         <div class="item-row" data-category="{{category}}">
         <div>
@@ -256,24 +293,30 @@ margin-left: -17px;
   </div>
 
   <script>
-function updateItemsList(items, category) {
+function updateItemsList(data, subcategory) {
   const itemsContainer = document.getElementById('itemsContainer');
   itemsContainer.innerHTML = '';
 
-  items.forEach(item => {
-    if (item.category === category) {
-      const itemRow = document.createElement('div');
-      itemRow.classList.add('item-row');
+  if (data && Array.isArray(data) && data.length > 0) {
+    data.forEach(item => {
+      // Assuming the property representing item name is 'itemName'
+      const itemName = item.itemName;
 
-      const itemName = document.createElement('h5');
-      itemName.textContent = item.itemName;
+      // Assuming the property representing item price is 'itemPrice'
+      const itemPrice = item.itemPrice;
 
-      const itemPrice = document.createElement('div');
-      itemPrice.textContent = item.itemPrice;
+      // Create a container for each item
+      const itemContainer = document.createElement('div');
+      itemContainer.classList.add('item-row');
 
-      itemRow.appendChild(itemName);
-      itemRow.appendChild(itemPrice);
+      // Create elements for item name and price
+      const itemNameElement = document.createElement('h5');
+      itemNameElement.textContent = itemName;
 
+      const itemPriceElement = document.createElement('div');
+      itemPriceElement.textContent = itemPrice;
+
+      // Create the "Add" button
       const addButton = document.createElement('button');
       addButton.classList.add('btn', 'btn-primary');
       addButton.style.backgroundColor = '#59a61f';
@@ -283,27 +326,20 @@ function updateItemsList(items, category) {
         toggleAdjust(addButton);
       };
 
-      itemRow.appendChild(addButton);
+      // Append elements to the item container
+      itemContainer.appendChild(itemNameElement);
+      itemContainer.appendChild(itemPriceElement);
+      itemContainer.appendChild(addButton);
 
-      const quantityForm = document.createElement('div');
-      quantityForm.classList.add('quantity-form');
-
-      const quantityInput = document.createElement('input');
-      quantityInput.type = 'text';
-      quantityInput.name = 'quantity';
-      quantityInput.value = '1';
-      quantityInput.classList.add('qty');
-      quantityInput.style.width = '10vh';
-      quantityInput.style.backgroundColor = 'rgb(209, 236, 166)';
-      quantityInput.style.border = 'none';
-
-      quantityForm.appendChild(quantityInput);
-
-      itemRow.appendChild(quantityForm);
-
-      itemsContainer.appendChild(itemRow);
-    }
-  });
+      // Append the item container to the items container
+      itemsContainer.appendChild(itemContainer);
+    });
+  } else {
+    // Handle the case when there are no items
+    const noItemsMessage = document.createElement('p');
+    noItemsMessage.textContent = 'No items available.';
+    itemsContainer.appendChild(noItemsMessage);
+  }
 
   // Append the "View Order" button after adding the items
   const viewOrderButton = document.createElement('button');
@@ -317,33 +353,118 @@ function updateItemsList(items, category) {
 
 
 
-    function handleCategoryClick(category) {
-      console.log('Clicked category:', category);
-
-      fetch(`/api/items?category=${category}`)
-        .then(response => response.json())
-        .then(data => {
-          console.log('Filtered items:', data.items);
-          updateItemsList(data.items, category);
-        })
-        .catch(error => console.error('Error fetching items:', error));
+function bindQuantityEvents() {
+  // Example using event delegation:
+  document.getElementById('itemsContainer').addEventListener('click', function (event) {
+    if (event.target.classList.contains('plus')) {
+      // Handle plus button click
+      // You can access the corresponding quantity form and adjust the quantity here
+      const quantityForm = event.target.closest('.item-row').querySelector('.quantity-form');
+      // ... (your logic)
+    } else if (event.target.classList.contains('minus')) {
+      // Handle minus button click
+      // You can access the corresponding quantity form and adjust the quantity here
+      const quantityForm = event.target.closest('.item-row').querySelector('.quantity-form');
+      // ... (your logic)
     }
+  });
+}
+
+
+function handleFilterClick(filterValue, isSubcategory = false) {
+  const endpoint = isSubcategory ? '/api/itemss' : '/api/items';
+  const key = isSubcategory ? 'subcategory' : 'category';
+
+  fetch(`${endpoint}?${key}=${encodeURIComponent(filterValue)}`)
+    .then(response => response.json())
+    .then(data => {
+      console.log('Filtered items:', data.items);
+      updateItemsList(data.items, filterValue);
+      bindQuantityEvents(); // Ensure quantity events are bound after updating items
+    })
+    .catch(error => console.error('Error fetching items:', error));
+}
+
+
+
+
+
+function handleCategoryClick(category) {
+  console.log('Clicked category:', category);
+
+fetch(`/api/items?category=${category}`)
+  .then(response => response.json())
+  .then(data => {
+    console.log('Filtered items:', data.items);
+    updateItemsList(data.items, category);
+    bindQuantityEvents(); // Ensure quantity events are bound after updating items
+  })
+  .catch(error => console.error('Error fetching items:', error));
+
+}
+
+
+
+function subhandleCategoryClick(subcategory) {
+  if (!subcategory || typeof subcategory !== 'string') {
+    console.error('Error: Subcategory is empty or undefined. Subcategory:', subcategory);
+    // Handle the error gracefully, e.g., show an error message to the user
+    return;
+  }
+
+  console.log('Clicked subcategory:', subcategory);
+
+  fetch(`/api/itemss?subcategory=${encodeURIComponent(subcategory)}`)
+    .then(response => response.json())
+    .then(data => {
+      console.log('Full response:', data);
+      const items = data && data.it !== undefined ? data.it : [];
+      console.log('Filtered items:', items);
+      updateItemsList(items, subcategory);
+      bindQuantityEvents();
+    })
+    .catch(error => {
+      console.error('Error fetching items:', error);
+    });
+}
+
+
+
+
+
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Define handleCategoryClick function
+    const subcategoryButtons = document.querySelectorAll('.category-btn');
 
-    // Define setupCategoryButtons function
-    function setupCategoryButtons(categories) {
-        const categoryFilter = document.querySelector('.category-filter');
+    subcategoryButtons.forEach(button => {
+        button.addEventListener('click', function (event) {
+            // Extract subcategory directly from the button text
+            const subcategory = event.target.textContent.trim();
 
-        categories.forEach(category => {
-            const button = createButton(category.category, () => handleCategoryClick(category.category));
-            categoryFilter.appendChild(button);
+            // Check if subcategory is not empty
+            if (subcategory !== '') {
+                // Now, you have the subcategory value, and you can call the handler function
+                subhandleCategoryClick(subcategory);
+            } else {
+                console.error('Error: Subcategory is empty. Button:', event.target);
+                // Handle the error gracefully, e.g., show an error message to the user
+            }
         });
-    }
+    });
+
+    // Define handleCategoryClick function
+    // Define setupCategoryButtons function
+  function setupCategoryButtons(categories) {
+    const categoryFilter = document.querySelector('.category-filter');
+    categoryFilter.innerHTML = ''; // Clear existing buttons
+
+    categories.forEach(category => {
+        const button = createButton(category.category, () => handleCategoryClick(category.category));
+        categoryFilter.appendChild(button);
+    });
+}
+
 //end
-
-
    fetch('/api/categories')
         .then(response => {
             if (!response.ok) {
@@ -360,25 +481,49 @@ document.addEventListener('DOMContentLoaded', function () {
             setupCategoryButtons(categories);
         })
         .catch(error => console.error('Error fetching categories:', error));
-});
-/*
-    const categoryButtons = document.querySelectorAll('.category-btn');
-    categoryButtons.forEach(button => {
-      button.addEventListener('click', function () {
-        const category = this.textContent.toLowerCase();
-        const subcategoryFilter = document.querySelector('.subcategory-filter'); // Add this line
-        filterSubcategories(category, subcategoryFilter);
-      });
-    });
 
-    */
-    function createButton(text, clickHandler) {
-      const button = document.createElement('button');
-      button.classList.add('category-btn');
-      button.textContent = text;
-      button.onclick = clickHandler;
-      return button;
-    }
+//Here start for subcategorgy
+// Inside the subsetupCategoryButtons function
+function subsetupCategoryButtons(subcategories) {
+  const subcategoryFilter = document.querySelector('.subcategory-filter');
+  subcategoryFilter.innerHTML = ''; // Clear existing buttons
+
+  subcategories.forEach(subcategory => {
+    const btn = createButton(subcategory.subCategory, () => subhandleCategoryClick(subcategory.subCategory));
+    btn.setAttribute('data-subcategory', subcategory.subCategory); // Set the data-subcategory attribute
+    subcategoryFilter.appendChild(btn);
+  });
+}
+
+
+
+fetch('/api/subcategories')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        const subcategories = data.subcategories;
+                console.log('Subcategories:', data.subcategories);
+
+        if (!subcategories || !Array.isArray(subcategories)) {
+            throw new Error('Invalid response format for subcategories');
+        }
+
+        subsetupCategoryButtons(subcategories);
+    })
+    .catch(error => console.error('Error fetching subcategories:', error));
+});
+
+  function createButton(text, clickHandler) {
+  const button = document.createElement('button');
+  button.classList.add('category-btn');
+  button.textContent = text;
+  button.onclick = clickHandler;
+  return button;
+}
 
     function filterCategory(category) {
       const items = document.querySelectorAll('.item-row');
@@ -424,7 +569,6 @@ function toggleAdjust(button) {
   const priceElement = itemRow.querySelector('.price');
   const priceText = priceElement ? priceElement.textContent : '';
   const price = priceText ? parseFloat(priceText.replace(/\$/g, '')) : 0;
-  console.log('price is: ' + price);
 
   const existingItem = selectedItems.find(item => item.name === itemName);
 
@@ -444,10 +588,10 @@ function toggleAdjust(button) {
     const quantity = parseInt(quantityInput.value);
 
     if (existingItem) {
-      // Update quantity if item already exists
+      // Update quantity if the item already exists
       existingItem.quantity = quantity;
     } else {
-      // Add new item to the list with price
+      // Add a new item to the list with the price
       selectedItems.push({
         name: itemName,
         quantity: quantity,
@@ -508,10 +652,7 @@ document.getElementById('itemsContainer').addEventListener('click', function (ev
           }
         });
       });
-     
-
-
-    
+  
   </script>
 </body>
 
